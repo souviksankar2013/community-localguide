@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime location tracker</title>
+
+    <!-- leaflet css  -->
+    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" /> -->
+    <!-- Load Leaflet from CDN -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+      integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+      integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+      crossorigin=""
+    ></script>
+
+    <!-- Load Esri Leaflet from CDN -->
+    <script src="https://unpkg.com/esri-leaflet@3.0.4/dist/esri-leaflet.js"></script>
+    <script src="https://unpkg.com/esri-leaflet-vector@3.0.0/dist/esri-leaflet-vector.js"></script>
+
+    <!-- Load Esri Leaflet Geocoder from CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder@3.0.0/dist/esri-leaflet-geocoder.css"">
+    <script src="https://unpkg.com/esri-leaflet-geocoder@3.0.0/dist/esri-leaflet-geocoder.js"></script>
+
+
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+    <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        #submit {
+    background: url('img/loader.gif');
+    background-position: 9px;
+    background-repeat: no-repeat;
+    background-size: 36px 50px;
+    
+    
+    color: rgba(0, 0, 0, 0.5);
+  }
+        input[type=search]::-webkit-search-cancel-button {
+    -webkit-appearance: searchfield-cancel-button;
+}
+    </style>
+</head>
+
+<body>
+
+  <h3 style="text-align:left;"><img src="img/logo_final.png" height="60" width="48"><b>Explore Places. Add Here. </b></h3>
+    <div>
+      <!-- <button id="stgnin" style="float: left;" onclick="signin1()">Login</button> -->
+      
+      <button id="new" type="button" class="btn btn-primary" style="float:left">Add New Record</button>
+    
+    <button type="button" class="btn btn-primary" onclick="start_record()" id="start" disabled>Start</button>
+    
+    <button type="button" class="btn btn-primary" onclick="stop_record()" id="stop" disabled>Stop</button>
+
+    <button type="button" class="btn btn-primary" onclick="submit_record()" id="store1" disabled>Store</button>
+
+    <button type="button" class="btn btn-primary" onclick="delete_drawn()" id="clear" disabled>Clear All</button>
+
+    <button type="button" class="btn btn-primary" onclick="signout1()">Signout</button>
+
+
+    <h4 id="login" style="float: right;"></h4><br>
+    <!-- <p id="lat1">hii</p> -->
+
+    <!-- <button id="delete" style="float: left;" onclick="delete_drawn()">Delete</button> -->
+</div>
+    <div id="map"></div>
+
+
+
+
+  <!-- Place Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="exampleModalLabel">Add a New Place</h2>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <!-- <span aria-hidden="true">&times;</span> -->
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- <div style="float: left;"> -->
+
+          <!-- Building Name <input type="text" id="name"> <br>
+          No of Floors <input type="number" id="floor"> -->
+          <!-- <input class="form-control" type="text" placeholder="Building Name">
+          <input class="form-control" type="number" placeholder="No of Floors"> -->
+
+          <div class="form-group">
+            <!-- <label class="control-label col-md-3">Building Name:</label> -->
+            <!-- <div class="input-group col-md-7"> -->
+              <input class="form-control" type="text" id="name" placeholder="Enter Building Name">
+              <!-- <span class="input-group-addon">m</span> -->
+            <!-- </div> -->
+          </div>
+          <div class="form-group">
+            <!-- <label class="control-label col-md-3">No of Floors:</label> -->
+            <!-- <div class="input-group col-md-7"> -->
+              <input class="form-control" type="number" id="floor" placeholder="Specify No of Floors" onchange="add_floor()">
+              <!-- <span class="input-group-addon">m</span> -->
+            <!-- </div> -->
+          </div>
+
+          <!-- <input class="form-control" type="text" id="floor1" placeholder="Departments in Floor1"> -->
+
+        <p id="upload11">Upload Photo</p>
+        <input  type="file" id="files" capture="user" style="float: left;"/></div>
+        <!-- <div> -->
+        <!-- <img id="upload" src="" alt="Uploaded Image" height="150" width="150"> -->
+      <!-- </div style="float: left;"> -->
+        <!-- <button id="send">Upload</button> -->
+        <!-- <p id="uploading"></p> -->
+        <!-- <progress value="0" max="100" id="progress"></progress> -->
+        
+      <!-- </div> -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="send">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- New Record Modal -->
+  <div class="modal fade" id="recodmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="exampleModalLabel"><img src="img/logo_final.png" height="61" width="50">Add New Record</h2>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+
+          </button>
+        </div>
+        <div class="modal-body"> 
+            <div class="form-group">
+
+              <select name="category1" id="category1" class="form-control">
+                <option value="hospital">Hospital</option>
+                <option value="education">Education</option>
+                <option value="government office">Government Office</option>
+                
+              </select>
+
+              <!-- <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Type of Area
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="#">School</a>
+                  <a class="dropdown-item" href="#">Academic Institute</a>
+                  
+                </div>
+              </div> -->
+            </div>
+
+            <div class="form-group">
+
+              <select name="places" id="places" class="form-control">
+                <!-- <option value="hospital">Hospital</option>
+                <option value="academic">Education</option> -->
+                
+              </select>
+              </div>
+            <!-- <div class="form-group">
+
+                <input class="form-control" type="search" id="region" placeholder="Enter Institute Name">
+                <div id="element" style="overflow: auto;display: none"></div>
+
+            </div> -->
+
+        <div class="modal-footer">
+          <img src="img/loader.gif" height="60" width="43" id="loader" style="float:left;">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="new_save">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+</body>
+
+
+<!-- leaflet js  -->
+<!-- <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script> -->
+
+<script type="module">
+    
+    import { add_record, storage_photo, GFG_Fun, upload_data, signout, region_details, signin, search_placeid } from "./js/config.js";
+    // import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js";
+
+    window.signin1 = function signin1() {
+
+              signin()
+    }
+    window.search_placeid1 = function search_placeid1(category)
+                    
+        {
+                            
+          search_placeid(category).then((result) => {
+
+                      place_details=[]
+                      var check=[]
+
+                      var id = parseInt($("#places option:selected").val())
+
+                      place_details.push(all_places[id].attributes.PlaceName)
+                      place_details.push(all_places[id].attributes.Subregion)
+                      place_details.push(all_places[id].attributes.Region)
+                      place_details.push(all_places[id].attributes.Postal)
+                      place_details.push(all_places[id].attributes.Type)
+
+                      //console.log(place_details)
+
+                      place_id=''
+                        var pl_arr =place_details[0].split(' ')
+
+                        
+                        if (pl_arr.length >1) 
+                        {
+                          for (var d=0;d<pl_arr.length;d++)
+                          {
+                            place_id +=pl_arr[d].charAt(0);
+                          }
+
+
+                        }
+                        else 
+                        {
+                          place_id += pl_arr[0]
+                        }
+
+                        place_id += place_details[1].slice(0,2)
+                        place_id += place_details[2].slice(0,2)
+                        place_id += place_details[3].slice(-2)
+
+                        for (var j=0;j<result.length;j++)
+                        {
+
+                          check.push(result[j].split('_')[0])
+
+                        }
+
+                        //console.log(result)
+                        console.log(place_id)
+                        console.log(check.includes(place_id))
+
+                        if(check.includes(place_id))
+                        {
+                          alert('Place Already added. Please select another place')
+                          //$('#places').empty();
+                          
+
+                        }
+                        else 
+                        {}
+
+                        $('#loader').hide();
+
+            
+          })
+        }
+        
+    window.submit_record = function submit_record() {
+
+      $('#store1').attr('id','submit')
+      var coordinates_list = JSON.parse(replaced).geometry.coordinates[0]
+      
+      //console.log(coordinates_list)
+
+      // for (var i=0;i<coordinates_list.length;i++)
+      // {
+
+      // }
+      add_record(coordinates_list,random_id,place_id)
+
+      region_details(place_details,place_id,random_id,point_list.length)
+
+
+
+
+      //console.log(point_list)
+      //console.log(file_list)
+
+      for (var i=0;i<point_list.length;i++)
+      {
+        upload_rec(point_list[i],details_list[i],random_id,parseInt(i)+1,place_id,file_list[i].name,place_details)
+          //storage_photo1(files[0].name,files[0])
+
+      }
+
+      for (var i=0;i<file_list.length;i++)
+      {
+        //upload_rec(point_list[i])
+        storage_photo1(file_list[i].name,file_list[i],parseInt(i)+1,place_id,place_details)
+
+      }
+
+      delete_drawn();
+
+
+
+      
+    }
+
+
+    window.storage_photo1 = function storage_photo1(filename,file,count1,place_id,place_details) {
+
+      //if (random_id !='')
+      //{
+
+      storage_photo(filename,file,random_id,count1,place_id,place_details);
+      //}
+      //else 
+      //{
+        //alert ('Start adding a new record first')
+      //}
+      
+        
+
+    }
+
+      window.random_id1 = function random_id1() {
+
+      return GFG_Fun();
+      }
+
+      window.upload_rec = function upload_rec(array,temp_detail_list,random_id,count1,place_id,file_name,place_details) {
+
+          return upload_data(array,temp_detail_list,random_id,count1,place_id,file_name,place_details);
+        }
+
+      window.signout1 = function signout1() {
+
+            return signout();
+          }
+    
+
+
+
+
+
+
+  </script>
+<script>
+
+// window.onload = function() {
+//   auto_sign1();
+// };
+
+
+$('#loader').hide();
+
+
+var random_id = "";
+var point_list=[]
+var file_list=[]
+var place_list=[]
+var details_list=[]
+var greenIcon = L.icon({
+      iconUrl: 'img/place1.png',
+
+      iconSize: [50, 50], // size of the icon
+    });
+
+    //prevent back button
+    // window.history.forward();
+    //     function noBack() {
+    //         window.history.forward();
+    //     }
+
+    
+    window.onload = function() {
+      signin1()
+  };
+
+     
+
+
+
+    // //Google Authentication
+    // const googleAuth = new firebase.auth.GoogleAuthProvider();
+    // //To sign in with pop-up.
+    //     firebase.auth().signInWithPopup(googleAuth);
+
+    // //To sign in with redirect. 
+    //     firebase.auth().signInWithRedirect(googleAuth);
+
+
+
+
+
+    // Map initialization 
+    // var map = L.map('map').setView([14.0860746, 100.608406], 6);
+
+    // //osm layer
+    // var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    // });
+    // osm.addTo(map);
+
+    const apiKey = "AAPK4be3139cfd88419088a08374a61f706460N6EVB9btb-aNSXtpccuNhPt7-wNqdYkY2jMG43ic_VetbNe0MWF8Vtmrnp-44r";
+      const basemapEnum = "ArcGIS:Streets";
+
+      const map = L.map("map"
+    //   , {
+    //     minZoom: 2
+    //   }
+      ).setView([34.02, -118.805], 18);
+
+      L.esri.Vector.vectorBasemapLayer(basemapEnum, {
+        apiKey: apiKey
+      }).addTo(map);
+
+
+      // const searchControl = L.esri.Geocoding.geosearch({
+      //   position: "topright",
+      //   placeholder: "Enter an address or place e.g. 1 York St",
+      //   useMapBounds: false,
+      //   providers: [
+      //     L.esri.Geocoding.arcgisOnlineProvider({
+      //       apikey: apiKey,
+      //       nearby: {
+      //         lat: 34.02,
+      //         lng: -118.805
+      //       }
+      //     })
+      //   ]
+      // }).addTo(map);
+
+
+
+
+
+
+
+      var start1 = ''
+      function start_record()
+      {
+
+        alert ('Location will be updated after 20 seconds. Walk gently and carefully along your path.')
+
+        if (marker_list.length == 0)
+        {
+
+        random_id = random_id1();
+        //console.log(random_id)
+        }
+        else 
+        {
+
+        }
+
+        // if (geojson3)
+        // {
+        //   geojson2 = JSON.stringify(geojson3)
+
+        // }
+        // else
+        // {
+          
+        //}
+
+    if(!navigator.geolocation) 
+    {
+        alert("Your browser doesn't support geolocation feature!")
+    } else {
+        start1 = setInterval(() => {
+            navigator.geolocation.getCurrentPosition(getPosition)
+            
+            //navigator.geolocation.getCurrentPosition(getPosition)
+        }, 20000);
+        }
+    }
+
+
+function add_floor()
+{
+  $('input[name="floor_fields"]').remove()
+  // $("input").removeClass("floor_fields");
+  // var thisClass = $(this).attr("floor_fields");
+  // $('input.' + thisClass).remove();
+  var floor1 = $('#floor').val()
+  for (var i=0;i<floor1;i++)
+  {
+    $("#upload11").before('<input class="form-control" type="text" name="floor_fields" id="floor'+(i+1)+'" placeholder="Enter Departments in Floor '+(i+1)+' in comma separated way">');
+
+  }
+}
+
+
+
+
+function stop_record()
+{
+    clearInterval(start1)
+    //console.log(marker_list)
+
+    // for (var i=0;i<marker_list.length;i++)
+    // {
+    //     //console.log(marker_list[i])
+    // marker_list[0].on('dragend', function (e) {
+    //             console.log(marker_list[0].getLatLng().lat)
+    //             console.log(marker_list[0].getLatLng().lng)
+    //             });
+    //         }
+
+    for(var i = 0; i < marker_list.length; i++) {
+      marker_list[i].dragging.enable();
+        marker_list[i].addEventListener("dragend", bindClick(i));
+    }
+
+ function bindClick(i) {
+    return function() {
+
+      //console.log(replaced)
+      //console.log(marker_list.length)
+        
+        //console.log(marker_list[i].getLatLng().lat)
+     //console.log(marker_list[i].getLatLng().lng)
+     //if (replaced)
+     //{
+        // let i = 0;
+        // map.eachLayer(function(){ i += 1; });
+        // console.log('Map has', i, 'layers.');
+         geojson3 = JSON.parse(replaced)
+         
+
+         
+     
+         geojson3.geometry.coordinates[0][i] = [marker_list[i].getLatLng().lng,marker_list[i].getLatLng().lat]
+         
+        //  console.log(geojsonLayer._path) 
+        //  map.removeLayer(geojsonLayer)
+         geojsonLayer.removeFrom(map)
+
+         geojsonLayer = new L.GeoJSON(geojson3);    
+           
+         geojsonLayer.addTo(map);
+         //geojsonLayer.removeFrom(map)
+        //  console.log(geojsonLayer._path) 
+        replaced = JSON.stringify(geojson3)
+
+        
+        // var lastIndex = replaced.lastIndexOf(',')
+        
+        // if (lastIndex !== -1) {
+        //     replaced = replaced.substring(0, lastIndex) +''+replaced.substring(lastIndex + 1);
+        //     }
+
+        geojson2 = replaced.replace(']]}}',',')
+
+        console.log(geojson3)
+        
+
+        $.each(map._layers, function (ml) {
+
+          if (map._layers[ml].feature) {
+            
+          if (map._layers[ml].feature.geometry.coordinates[0].length != count)
+          {
+            map._layers[ml].removeFrom(map)
+          }
+          //console.log(marker_id)
+          //allMarkersObjArray.push(this)
+          //allMarkersGeoJsonArray.push(JSON.stringify(this.toGeoJSON()))
+          }
+          })
+        
+
+        
+       
+
+        
+        
+        
+         
+
+
+     //}
+    };
+ }
+
+        
+}
+
+    var marker, circle,geojsonLayer,geojson2,geojson3,replaced,count=0;
+    var marker_list=[]
+    geojson2 = '{ "type": "Feature", "properties": { "id": 1 }, "geometry": { "type": "MultiLineString", "coordinates": [ [';
+    
+    
+      
+
+    
+    
+
+    //var inc = 0.000001
+
+    function getPosition(position){
+         
+         //console.log(JSON.stringify(geojson3))
+
+        //  if (geojson3)
+        // {
+        //   geojson2 = replaced
+
+        // }
+        // else
+        // {}
+        
+
+        
+        
+
+
+        geojson2 = geojson2.replace('] ] } }','')
+        
+        // var lat = position.coords.latitude+inc
+        // var long = position.coords.longitude+inc
+
+        var lat = position.coords.latitude
+        var long = position.coords.longitude
+        
+        
+        var accuracy = position.coords.accuracy
+        map.panTo(new L.LatLng(lat,long));
+        //var coord = [position.coords.longitude+inc,position.coords.latitude+inc]
+        var coord = [position.coords.longitude,position.coords.latitude]
+        //inc += 0.000005
+
+        // if(marker) {
+        //     map.removeLayer(marker)
+        // }
+        // if(geojsonLayer) {
+        //     map.removeLayer(geojsonLayer)
+        // }
+
+        geojson2 += '['+coord.toString()+'],                                                                                                                                                   '
+
+        geojson2 += '] ] } }'
+
+
+        var lastIndex = geojson2.lastIndexOf(',')
+        
+        if (lastIndex !== -1) {
+            replaced = geojson2.substring(0, lastIndex) +''+geojson2.substring(lastIndex + 1);
+            }
+        //console.log(JSON.parse(replaced))
+
+
+
+        // if(circle) {
+        //     map.removeLayer(circle)
+        // }
+
+        marker = L.marker([lat, long])
+        marker.addTo(map)
+        marker_list.push(marker)
+        
+
+        // marker.on('dragend', function (e) {
+        //         console.log(marker.getLatLng().lat)
+        //         console.log(marker.getLatLng().lng)
+        //         });
+        //console.log(replaced)
+        geojsonLayer = new L.GeoJSON(JSON.parse(replaced));       
+        geojsonLayer.addTo(map);
+
+        count +=1
+        
+        //circle = L.circle([lat, long], {radius: accuracy})
+
+        //var featureGroup = L.featureGroup([marker]).addTo(map)
+        //var featureGroup = L.featureGroup([marker, circle]).addTo(map)
+
+        //map.fitBounds(featureGroup.getBounds())
+
+        //console.log("Your coordinate is: Lat: "+ lat +" Long: "+ long+ " Accuracy: "+ accuracy)
+    }
+
+    // async function submit_record()
+    // {
+      
+    //   var coordinates_list = JSON.parse(replaced).geometry.coordinates[0]
+    //   console.log(coordinates_list)
+    //   add_record('Souvik','Mitra')
+
+
+    // }
+
+    
+
+//     var geojson1 = { "type": "Feature", "properties": { "id": 1 }, "geometry": { "type": "MultiLineString", "coordinates": [ [ 
+// [ 78.046922478090877, 30.338978651629414 ], 
+// [ 78.047844471984632, 30.339219220500652 ], 
+// [ 78.048916557907603, 30.339570820095211 ], 
+// [ 78.049849272660595, 30.33985765040811 ], 
+// [ 78.050642616243607, 30.340079712008656 ], 
+// [ 78.051221542641997, 30.340255510418505 ] ] ] } }
+
+//     var geojsonLayer = new L.GeoJSON(geojson1);       
+//     geojsonLayer.addTo(map);
+
+function delete_drawn()
+{
+
+  $('#new').prop('disabled', false);
+  $('#start').prop('disabled', true);
+  $('#stop').prop('disabled', true);
+  $('#store1').prop('disabled', true);
+  $('#clear').prop('disabled', true);
+  
+
+  $('#category1 option:selected').removeAttr('selected');
+  $('#places').empty()
+
+  count = 0
+
+
+  for(var i = 0; i < marker_list.length; i++) 
+  {
+        map.removeLayer(marker_list[i])
+        
+  }
+  for(var i = 0; i < place_list.length; i++) 
+  {
+        map.removeLayer(place_list[i])
+        
+  }
+  
+    marker_list=[]
+    place_list=[]
+    point_list=[]
+    file_list = []
+
+  $.each(map._layers, function (ml) {
+
+
+
+        
+
+        if (map._layers[ml].feature) {
+
+ 
+             map._layers[ml].removeFrom(map)
+             replaced = ''
+             geojson2 = '{ "type": "Feature", "properties": { "id": 1 }, "geometry": { "type": "MultiLineString", "coordinates": [ [';
+             
+             //inc = 0.000001
+  
+
+  
+
+        }
+})
+
+}
+
+//##################### Add Point
+var point = []
+map.on('dblclick', function(e){
+
+  if (random_id != '' && $('#login').html() != '')
+  {
+  stop_record()
+
+  point = [e.latlng.lat,e.latlng.lng]
+
+  //alert("Lat, Lon : " + e.latlng.lat + ", " + e.latlng.lng)
+  //$(".modal-body").html("Lat, Lon : " + e.latlng.lat + ", " + e.latlng.lng);
+  $("#myModal").modal()
+  }
+  else 
+  {
+    alert ('Please Login or Start Path Record')
+    window.location = 'signin.html'
+
+  }
+    
+});
+
+$("#myModal").on("hidden.bs.modal", function(){
+  // $(".modal-body").html('');
+  const input = document.querySelector('input') 
+  input.value = '';
+  //const img = document.getElementById('upload');
+  //img.src=''
+  $('#name').val('')
+  $('#floor').val('')
+  $('#files').val('')
+  $('input[name="floor_fields"]').remove()
+  $('#preview').remove()
+
+
+  // for (var k=0;k<parseInt($('#floor').val());k++)
+  //           {
+
+              
+  //       //       // console.log()
+  //               var floor11=document.getElementById('floor'+(k+1));
+  //               // console.log(floor11.value)
+  //       //         floor1.push(floor11.val)
+  //       //       //   //temp_details.push($(x).val())
+  //               $(floor11).change(function() {
+  //                 console.log(floor11.value)
+                  
+  //                 details_list[j-1][k+2] = floor11.value
+  //             });
+
+                
+  //          }
+  executed = false
+  //start_record()
+
+    
+    
+    });
+
+var files = [];
+document.getElementById("files").addEventListener("change", function(e) {
+        files = e.target.files;
+        //console.log(files)
+        
+});
+var executed = false;
+document.getElementById("send").onclick = function() {
+
+  var temp_details=[]
+  
+  if (files.length>0 || $('#preview').length) //image insert
+  {
+  //upload_rec(point)
+  //storage_photo1(files[0].name,files[0])
+  if (point_list.includes(point))
+  {}
+  else
+  {
+  point_list.push(point)
+
+  // if (typeof files[0] === "undefined")
+  // {
+  //   console.log('hii')
+
+  // }
+  // else 
+  // {
+    //console.log('bye')
+  file_list.push(files[0])
+  //}
+  
+  var marker1 = L.marker(point, {icon: greenIcon,draggable:'true'})
+  
+//   .on('click', function(e) {
+
+
+//     //console.log(e.latlng);
+//     $("#myModal").modal()
+
+// });
+
+
+  place_list.push(marker1)
+
+  marker1.addTo(map)
+
+  temp_details.push($('#name').val())
+  temp_details.push($('#floor').val())
+
+  for (var i=0;i<$('#floor').val();i++)
+  {
+    //var x1=document.getElementById('floor'+(i+1)+'_'+j+'');
+    var y1=document.getElementById('floor'+(i+1));
+    //console.log(x1)
+    console.log(y1)
+    temp_details.push($(y1).val())
+  }
+
+  details_list.push(temp_details)
+}
+
+  //console.log(temp_details)
+
+  //console.log(details_list)
+  //console.log(point_list)
+  
+  
+
+  for (var j=0;j<place_list.length;j++)
+  {
+    
+    
+    
+    
+        
+        place_list[j].addEventListener("click", function() {
+
+          // var floor_list=[]
+          //var floor_list1=[]
+          
+           
+          
+          
+          if (!executed)
+          {
+            //console.log(details_list)
+            $('#name').attr('name','name_'+j)
+            $('#floor').attr('name','floor_'+j)
+            $('#files').attr('name','files_'+j)
+            var name11 = document.getElementsByName('name_'+j)
+            var floor11 = document.getElementsByName('floor_'+j)
+            var files11 = document.getElementsByName('files_'+j)
+
+            
+          
+
+          
+          //console.log(j)
+
+        $("#myModal").modal()
+        //console.log(details_list)
+        $(name11).val(details_list[j-1][0])
+        $(floor11).val(details_list[j-1][1])
+        for (var i=0;i<parseInt(details_list[j-1][1]);i++)
+        {
+            $("#upload11").before('<input class="form-control" type="text" name="floor_fields" id="floor'+(i+1)+'_'+j+'" placeholder="Enter Departments in Floor '+(i+1)+' in comma separated way">');
+
+            var y=document.getElementById("floor"+(i+1)+"_"+j+"");
+            y.value = details_list[j-1][i+2]
+
+            //floor_list.push(details_list[j-1][i+2])
+
+              
+            
+            
+
+        }
+        // console.log(j-file_list.length)
+        // if (typeof file_list[j-1] === "undefined")
+        // {
+        //   file_list[j-1] = file_list[j-file_list.length]
+        // }
+        // else 
+        // {}
+        //console.log(file_list[j-1])
+        //console.log(file_list)
+        var reader  = new FileReader();
+        reader.onload = function(e)  {
+            //var image = document.createElement("img");
+            //image.src = e.target.result;
+            //document.body.appendChild(image);
+            // if (!$('#preview').length)
+            // {
+            $(files11).after('<img src='+e.target.result+' id="preview" style="float: left;" height=100 width=100><br>')
+            //}
+         }
+         reader.readAsDataURL(file_list[j-1]);
+        //console.log(file_list[0])
+        //$('#files').after('<img src='+file_list[0].name+' height=100 width=100>')
+        //$('#files').val(file_list[0].name)
+
+        //change the original value
+
+        
+        
+        $(name11).change(function() {
+          //console.log(details_list)
+          if (typeof $(name11).val() === "undefined")
+          {}
+
+          else
+          {
+          //{
+          details_list[j-1][0] = $(name11).val()
+          //console.log($(name11).val())
+          }
+          //}
+          //console.log(details_list)
+            });
+
+        $(floor11).change(function() {
+
+          if (typeof $(floor11).val() === "undefined")
+          {}
+
+          else
+          {
+          details_list[j-1][1] = $(floor11).val()
+          for (var p=0;p<$(floor11).val();p++)
+          {
+            var floor_details1 = document.getElementById('floor'+(p+1))
+            $(floor_details1).attr('id','floor'+(p+1)+'_'+j+'')
+
+          }
+          
+          }
+            });
+      
+        $(files11).change(function() {
+
+          //console.log($(files11).attr('name'))
+          if (typeof $(files11).attr('name') === "undefined")
+          {}
+          else 
+          {
+          //($(files11).attr('name').split('_')[1])
+          
+            file_list[$(files11).attr('name').split('_')[1]-1] = files[0]
+            //console.log($(files11).attr('name').split('_')[1])
+          }
+
+            });
+
+        //console.log($("#floor").val()+1)
+
+        // $("#floor1").change(function() {
+        //   details_list[j-1][2] = $("#floor1").val()
+        //     });
+          // console.log(parseInt($(floor11).val()))
+          
+            
+            document.getElementById("send").onclick = function() 
+            {
+              for (var c=0;c<parseInt($(floor11).val());c++)
+                {
+                  var floor_details = document.getElementById('floor'+(c+1)+'_'+j+'')
+                  //floor_list.push(floor_details.value)
+
+                  details_list[j-1][c+2] = floor_details.value
+
+
+                }
+                // for (var d=0;d<.val());d++)
+                // {
+
+                // }
+
+                console.log(details_list)
+                $('#myModal').modal('hide');
+              
+            }
+            
+            
+          //   $(floor_details).change(function() {
+          //     console.log('floor'+(c)+'_'+j+'')
+          //     console.log(floor_details)
+          //   })
+          
+          
+
+ 
+
+        
+
+
+
+        
+        executed = true
+      }
+      else {}
+
+
+    
+
+  })
+  
+
+
+  }
+
+
+
+
+  $('#myModal').modal('hide');
+  
+  }
+
+  else if ($('#preview').length)  //image update
+  {
+
+    //for (var m=0;m<place_list.length;m++)
+  //{
+    
+    
+        
+        //place_list[m].addEventListener("click", function() {
+          //console.log('hii')
+
+          //if (!executed)
+          //{
+            //console.log('bye')
+            //file_list[m-1]=files[0]
+
+            //executed = true
+          //}
+         // else {}
+        //})
+    //}
+
+
+    $('#myModal').modal('hide');
+
+  }
+  else 
+  {
+    alert('Please select a photo first')
+  }
+  
+
+  
+}
+function objectToQueryString(obj) {
+  var str = [];
+  for (var p in obj)
+    if (obj.hasOwnProperty(p)) {
+      str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+    }
+  return str.join("&");
+}
+
+var host = 'https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates'
+// var host = 'https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest'
+var drop1 = document.getElementById('element')
+
+if(!navigator.geolocation) 
+    {
+        console.log("Your browser doesn't support geolocation feature!")
+    } else {
+
+      navigator.geolocation.getCurrentPosition(position_new_record)
+    }
+
+var lat=0
+var long=0
+var all_places=[]
+var place_details=[]
+var place_id=''
+function position_new_record(position){
+
+
+  lat = position.coords.latitude
+  long = position.coords.longitude
+
+  // $('#lat1').html(lat+'_'+long)
+
+  map.setView([lat,long], 18, {
+  "animate": true,
+  "pan": {
+    "duration": 2
+    }
+  });
+
+  
+  
+
+
+  }
+
+
+$('#new').click(function ()
+{
+  $("#recodmodal").modal()
+
+  $('#category1').change(function()
+    {
+      $('#loader').show();
+      //console.log(lat)
+      //console.log(long)
+      $('#places').html('');
+      $('#places').html('<option value="">Select Place Name</option>');
+      all_places=[]
+
+      var params= {
+
+            outSr: 4326,
+            forStorage: false,
+            outFields:'*',
+            maxLocations:30,
+            category:$('#category1').val(),
+            token:apiKey,
+            distance:2000,
+            location:long.toString()+','+lat.toString(),
+            f:'json'
+
+          }
+
+          const url = objectToQueryString(params);
+
+          var url1 = host + '?'+ url;
+
+          $.ajax({
+  								
+                  url: url1,
+  						
+									dataType: "json",
+									type: "GET",
+    				
+									success: function(result) {
+
+                    all_places = result.candidates
+
+                    
+
+                    for (var u=0;u<result.candidates.length;u++)
+                    {
+
+                      //console.log(result.candidates[u].attributes.PlaceName)
+                      $('#places').append(`<option value="`+u+`">`+result.candidates[u].attributes.PlaceName+`</option>`);
+
+                    }
+
+                    $('#loader').hide();
+
+
+
+      							
+                  }
+                })
+
+          //console.log(url)
+    })
+
+    
+                    $('#places').change(function()
+                    {
+
+                      $('#loader').show();
+
+                      //console.log($('#category1').val().toLowerCase())
+
+                        
+
+                      
+
+                        search_placeid1($('#category1').val().toLowerCase())
+
+                        
+
+
+
+
+                      })
+
+    
+
+})
+
+
+
+document.getElementById("new_save").onclick = function() {
+
+  $('#start').prop('disabled', false);
+  $('#stop').prop('disabled', false);
+  $('#store1').prop('disabled', false);
+  $('#clear').prop('disabled', false);
+  $('#new').prop('disabled', true);
+
+
+  
+
+/*   var category = $('#category1').val()
+  var region1= $('#region').val()
+  //splitting address to name, state, district
+  var record_arr=region1.split(', ')
+
+  for (var u=0;u<record_arr.length;u++)
+  {
+    if (!isNaN(record_arr[u]))
+    {
+      const index = record_arr.indexOf(record_arr[u]);
+
+      record_arr.splice(index, 1); // 2nd parameter means remove one item only
+    }
+  }
+  console.log(record_arr)
+   */
+
+  $('#recodmodal').modal('hide');
+
+
+}
+
+
+
+  
+  
+</script>
+
+
+
+  </html>

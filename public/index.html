@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignUp</title>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+   <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+
+</head>
+
+<body>
+  <h2 style="text-align:center;"><img src="img/logo_final.png" height="92" width="75"><br><b>Welcome to Community Local Guide</b></h2>
+    
+    <div class="form-group" style="padding-left: 20%;padding-right: 20%;">
+        <div style="text-align: center;"><h2>Sign Up</h2></div>
+    <form id="form1">
+<input class="form-control" type="email" id="email" placeholder="Enter Email Address"><br>
+<input class="form-control" type="password" id="pass" placeholder="Enter Password"><br>
+<input class="form-control" type="submit" value="Register">
+</form>
+</div>
+<div style="text-align: center">
+  <img src="img/loader.gif" height="90" width="64" id="loader">
+  <br>
+<button type="button" class="btn btn-primary" id="login">Have an account! Login here</button>
+
+<button type="button" class="btn btn-primary" id="client">Search for Places</button>
+</div>
+
+
+</body>
+
+<script type="module">
+    import { signup } from "./js/config_signup.js";
+
+    window.signup1 = function signup1(email,password) {
+      signup(email,password)
+    }
+
+</script>
+<script>
+
+$('#loader').hide();
+$("#login").click(function(){
+  window.location = 'signin.html'
+});
+
+$("#client").click(function(){
+  window.location = 'client.html'
+});
+
+$('#form1').on('submit', function(e){
+    // validation code here
+    
+      e.preventDefault();
+      $('#loader').show();
+      
+      signup1($('#email').val(),$('#pass').val())
+    
+});
+
+    //}
+</script>
+  
+</html>

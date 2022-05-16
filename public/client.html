@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime location tracker</title>
+
+    <!-- leaflet css  -->
+    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" /> -->
+    <!-- Load Leaflet from CDN -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+      integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+      integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+      crossorigin=""
+    ></script>
+
+    <!-- Load Esri Leaflet from CDN -->
+    <script src="https://unpkg.com/esri-leaflet@3.0.4/dist/esri-leaflet.js"></script>
+    <script src="https://unpkg.com/esri-leaflet-vector@3.0.0/dist/esri-leaflet-vector.js"></script>
+
+    <!-- Load Esri Leaflet Geocoder from CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder@3.0.0/dist/esri-leaflet-geocoder.css"">
+    <script src="https://unpkg.com/esri-leaflet-geocoder@3.0.0/dist/esri-leaflet-geocoder.js"></script>
+
+
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+    <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 40vh;
+        }
+        input[type=search]::-webkit-search-cancel-button {
+    -webkit-appearance: searchfield-cancel-button;
+}
+    </style>
+</head>
+
+<body>
+
+  <div id="map" style="position:relative;"></div>
+  <h2 style="text-align:center;"><img src="img/logo_final.png" height="92" width="75"><button type="button" class="btn btn-primary" id="search1">Search for Places</button></h2>
+    
+<div id="details" style="height: 20%;position: relative;padding-left: 5%;padding-right: 5%">
+  
+  
+  
+  <div id="place_details">
+    
+  </div>
+  <button type="button" class="btn btn-primary" id="report" style="float:right">Report</button>
+  <br>
+  <h4><b>Select Dept.:</b></h4>
+
+  <select name="floor_details" id="floor_details" class="form-control" style="width: 50%;float: left;">
+    <!-- <option value="hospital">Hospital</option>
+    <option value="academic">Education</option> -->
+    
+  </select>
+
+  
+
+
+  <img src="" id="img1" height="168" width="121" style="float:left;"><br>
+
+</div>
+<!-- <img src="img/loader.gif" height="90" width="64" id="loader1" style="height: 20%;position: relative;padding-left: 5%;padding-right: 5%"> -->
+
+<div class="modal fade" id="report1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h2 class="modal-title" id="exampleModalLabel"><img src="img/logo_final.png" height="61" width="50">Report Problem</h2>
+
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+
+          <input type="checkbox" id="inroad" name="inroad" value="Incomplete Route">
+          <label for="Incomplete Route">Incomplete Route</label><br>
+          <input type="checkbox" id="inbuild" name="inbuild" value="Building Names Incorrect">
+          <label for="Building Names Incorrect">Building Names Incorrect</label><br>
+          <input type="checkbox" id="inbuildloc" name="inbuildloc" value="Building Location Incorrect">
+          <label for="Building Location Incorrect">Building Location Incorrect</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <img src="img/loader.gif" height="60" width="43" id="loader2" style="float:left;">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="new_report">Report</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+
+  <!-- New Record Modal -->
+  <div class="modal fade" id="recodmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="exampleModalLabel"><img src="img/logo_final.png" height="61" width="50">Search for Places</h2>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+
+          </button>
+        </div>
+        <div class="modal-body"> 
+            <div class="form-group">
+
+              <select name="category1" id="category1" class="form-control">
+                <option value="">Select Place Type</option>
+                <option value="hospital">Hospital</option>
+                <option value="education">Education</option>
+                <option value="government office">Government Office</option>
+                
+              </select>
+
+              <!-- <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Type of Area
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="#">School</a>
+                  <a class="dropdown-item" href="#">Academic Institute</a>
+                  
+                </div>
+              </div> -->
+            </div>
+
+            <div class="form-group">
+
+              <select name="places" id="places" class="form-control">
+                
+                <!-- <option value="academic">Education</option> -->
+                
+              </select>
+              </div>
+            <!-- <div class="form-group">
+
+                <input class="form-control" type="search" id="region" placeholder="Enter Institute Name">
+                <div id="element" style="overflow: auto;display: none"></div>
+
+            </div> -->
+
+        <div class="modal-footer">
+          <img src="img/loader.gif" height="60" width="43" id="loader" style="float:left;">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="new_save">Search</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+
+<script type="module">
+  import { fetch_data, get_path, fetch_details, geturl, putreport, reportuser, delete_record} from "./js/config_client.js";
+
+
+  window.putreport1 = function putreport1(place_id,category)
+  {
+    putreport(place_id,category)
+  }
+
+  window.reportuser1 = function reportuser1(place_id,username,data)
+  {
+    reportuser(place_id,username,data).then((result) => {
+
+      if (result)
+      {
+        var splitted = detail_selected.split(',')
+
+        putreport1(splitted[0],category1)
+      }
+
+      else 
+      {
+        alert ('You have already reported for this place.')
+      }
+    })
+  }
+
+  window.geturl1 = function geturl1(imagename)
+                    
+        {
+
+          geturl(imagename)
+       }
+       
+  
+  window.fetch_details1 = function fetch_details1(id,category) 
+                    
+          {
+                fetch_details(id,category).then((result1) => {
+
+                //console.log(result1.report)
+
+                if (result1.report == 3){
+                  var splitted = detail_selected.split(',')
+                
+                  delete_record(splitted[0],result1.id,category1,result1.point_no,result1.user,result1.photo_name)
+
+                  alert ('Place Deleted due to high report')
+
+                }
+                else 
+                {
+
+                
+
+                $('#place_details').append('<div style="text-align: center;"><h4><b>Name:'+result1.name+'</b></h4><h5><b>'+result1.district+','+result1.state+', Pincode:'+result1.pin+'</b></h5></div>')
+
+              }
+
+              })
+                    
+  
+          }
+
+
+
+  window.get_path1 = function get_path1(collection,doc_id) {
+
+                get_path(collection,doc_id).then((result1) => {
+
+                  //console.log(result1[2])
+
+                  $('#floor_details').html('<option value="">Select Department</option>')
+                  
+
+                  
+                  for (var o=0;o<result1[1].length;o++)
+                  {
+                    var point = [result1[1][o].location._long,result1[1][o].location._lat]
+
+                    place_latlon.push([result1[1][o].location._long,result1[1][o].location._lat])
+                    //console.log(point)
+                    var marker1 = L.marker(point, {icon: greenIcon})
+                    var popupContent = 
+                          '<h5><b>Name: </b>' + result1[1][o].name + '</h5>'+'<h5><b>No. of Floor: </b>' +result1[1][o].floor+'</h5>'
+
+                    //geturl(result1[1][o].photo_name)
+                    //<img src="'+result1[2][o]+'" height=100 width=100><br>
+                    image_name.push(result1[1][o].photo_name)
+
+                    
+
+                    for (var r=0;r<result1[1][o].floor;r++)
+                    {
+                      var num1 = (r+1).toString()
+                      // var num1 = '\''+(r+1).toString()+'\''
+                      popupContent += "<h5><b>Floor "+(r+1)+": </b>" +result1[1][o][num1]+"</h5>"
+
+                      var names = result1[1][o][num1].split(',')
+
+                      for (var i=0;i<names.length;i++)
+                      {
+
+                        $('#floor_details').append(`<option value="`+(o+1)+`">`+names[i]+`</option>`);
+
+                      }
+
+                      // popupContent += "<h4><b>Floor "+(r+1)+": </b>" +result1[1][o]['\''+(r+1)+'\'']+"</h4>"
+                    }
+          
+                    marker1.bindPopup(popupContent).addTo(map);
+                    place_markers.push(marker1)
+
+                    // marker1.openPopup();
+
+                    //building_details.push([result1[1][o].name,result1[1][o].floor])
+                  }
+                  //console.log(image_name)
+
+                  var geojsonLayer = new L.GeoJSON(JSON.parse(result1[0]));       
+                  geojsonLayer.addTo(map);
+                  map.fitBounds(geojsonLayer.getBounds());
+
+
+
+                })
+
+          
+      }
+
+
+
+
+
+
+
+      // window.get_places1 = function get_places1(collection,doc_id) {
+
+      //     get_places(collection,doc_id).then((result1) => {
+
+      //       //console.log(result1)
+
+      //       console.log(result1)
+
+      //     })
+      //     }
+
+  window.fetch_data1 = function fetch_data1(collection_name) {
+      fetch_data(collection_name).then((result) => {
+
+        
+        
+
+        for (var k=0;k<result.length;k++)
+        {
+
+          var split_fetch = result[k].split('_')
+
+            //$('#places').append(`<option value="`+k+`">`+result[k]+`</option>`);
+
+            added_nearby.push(split_fetch[1])
+            id_nearby.push(split_fetch[0])
+            user_nearby.push(split_fetch[2])
+
+
+        }
+
+        var all_nearby = []
+        //console.log($('#category1').val().toLowerCase())
+
+        
+      all_places=[]
+
+      var params= {                                          //check which are nearby places and amongst them which are added in the system
+
+            outSr: 4326,
+            forStorage: false,
+            outFields:'*',
+            maxLocations:30,
+            category:$('#category1').val(),
+            token:apiKey,
+            distance:2000,
+            location:long.toString()+','+lat.toString(),
+            f:'json'
+
+          }
+
+          const url = objectToQueryString(params);
+
+          var url1 = host + '?'+ url;
+
+          $.ajax({
+  								
+                  url: url1,
+  						
+									dataType: "json",
+									type: "GET",
+    				
+									success: function(result) {
+
+                    all_places = result.candidates
+
+                    
+
+                    for (var u=0;u<result.candidates.length;u++)
+                    {
+
+                      //console.log(result.candidates[u].attributes.PlaceName)
+                      all_nearby.push(result.candidates[u].attributes.PlaceName)
+                      
+
+                    }
+
+                    //console.log(all_nearby)
+                    //console.log(added_nearby)
+
+                    var nearby = all_nearby.filter(value => added_nearby.includes(value))
+
+                    
+                    $('#places').empty()
+                    $('#places').html('<option value="">Select Place Name</option>');
+
+                    for (var e=0;e<nearby.length;e++)
+                          {
+                              //var index1 = added_nearby.findIndex(nearby[e]);
+                              var index1 = added_nearby.indexOf(nearby[e])
+
+                              $('#places').append(`<option value="`+id_nearby[index1]+`,`+user_nearby[index1]+`">`+nearby[e]+`</option>`);
+                              //console.log(id_nearby[index1])
+
+                              
+
+                          }
+
+                          $('#loader').hide();
+                  }
+                })
+
+              })
+
+              
+      
+
+    }
+</script>
+
+<script>
+
+  $('#img1').hide()
+
+  $('#loader').hide();
+  // $('#loader1').hide();
+  const apiKey = "AAPK4be3139cfd88419088a08374a61f706460N6EVB9btb-aNSXtpccuNhPt7-wNqdYkY2jMG43ic_VetbNe0MWF8Vtmrnp-44r";
+      const basemapEnum = "ArcGIS:Streets";
+
+      const map = L.map("map"
+    //   , {
+    //     minZoom: 2
+    //   }
+      ).setView([34.02, -118.805], 15);
+
+      L.esri.Vector.vectorBasemapLayer(basemapEnum, {
+        apiKey: apiKey
+      }).addTo(map);
+
+var image_name = []
+var place_latlon = []
+var added_nearby=[]
+var id_nearby=[]
+var user_nearby = []
+var all_places=[]
+var markers = new L.LayerGroup(); // NOTE: Layer is created here!
+var place_markers=[]
+var greenIcon = L.icon({
+      iconUrl: 'img/place1.png',
+
+      iconSize: [50, 50], // size of the icon
+    });
+
+
+      $(window).on('load', function() {
+        $('#recodmodal').modal({backdrop: 'static', keyboard: false})  
+        $('#recodmodal').modal();
+        
+        
+
+        $('#category1').change(function()
+    {
+              $('#loader').show();
+              
+      
+              fetch_data1($('#category1').val().toLowerCase())
+
+          //console.log(url)
+    })
+
+    });
+    $('#search1').click(function(){
+
+      $('#recodmodal').modal({backdrop: 'static', keyboard: false})  
+        $('#recodmodal').modal();
+        
+        
+
+        $('#category1').change(function()
+    {
+      
+              fetch_data1($('#category1').val().toLowerCase())
+          //console.log(url)
+    })
+  
+});
+
+
+
+$("#recodmodal").on("hidden.bs.modal", function(){
+
+  $('#category1').val('')
+  $('#places').empty()
+})
+
+
+    function objectToQueryString(obj) {
+  var str = [];
+  for (var p in obj)
+    if (obj.hasOwnProperty(p)) {
+      str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+    }
+  return str.join("&");
+}
+
+var host = 'https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates'
+// var host = 'https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest'
+var drop1 = document.getElementById('element')
+
+
+function errorHandler(err) 
+{
+            if(err.code == 1) {
+               alert("Error: Access is denied!");
+            } else if( err.code == 2) {
+               alert("Error: Position is unavailable!");
+            }
+ }
+
+if(!navigator.geolocation) 
+    {
+        console.log("Your browser doesn't support geolocation feature!")
+    } else {
+      var options = {timeout:1000};
+
+      navigator.geolocation.getCurrentPosition(position_new_record)
+      navigator.geolocation.watchPosition(showLocation, errorHandler, options);
+    }
+
+var lat=0
+var long=0
+
+function showLocation(position)
+{
+  markers.clearLayers();
+  var marker = L.marker([position.coords.latitude,position.coords.longitude]);
+  markers.addLayer(marker); 
+  markers.addTo(map);
+
+}
+
+
+
+function position_new_record(position){
+
+
+  lat = position.coords.latitude
+  long = position.coords.longitude
+
+  //console.log(lat)
+  //console.log(long)
+
+
+  }
+
+var detail_selected,category1;
+
+document.getElementById("new_save").onclick = function() {
+
+/*   $('#place_details').contents().filter(function(){
+    return this.nodeType === 3;
+}).remove(); */
+
+$('#place_details').empty()
+
+
+
+
+ 
+
+  
+
+  detail_selected = $('#places').val()
+  var splitted = detail_selected.split(',')
+  //console.log(#recodmodal
+
+  category1 = $('#category1').val().toLowerCase()
+
+
+
+  get_path1(splitted[1],splitted[0])
+
+  fetch_details1(splitted[0],$('#category1').val())
+
+
+
+  //get_places1(splitted[1],splitted[0])
+
+  //console.log($('#category1').val())
+  //console.log($('#places').val())
+
+
+
+
+
+  $('#recodmodal').modal('hide');
+
+
+
+
+}
+
+$("#floor_details").change(function() {
+
+  //$('#loader1').show();
+  $('#img1').show();
+  $("#img1").attr("src",'img/loader.gif');
+  
+
+  
+  var id11 = $('#floor_details').val()
+  //console.log(id11)
+
+  map.setView(place_latlon[id11-1], 22, {
+  "animate": true,
+  "pan": {
+    "duration": 2
+    }
+  });
+
+
+
+
+ 
+ place_markers[id11-1].openPopup();
+ //console.log(image_name)
+
+ //$('#img1')
+ //$("#img1").attr("src",image_name[id11-1]);
+
+ geturl1(image_name[id11-1])
+
+  
+
+
+})   
+   
+/* $('#img1')
+	.load(function(){
+    //$('#loader1').hide();
+		
+	})
+	.error(function(){
+		
+	}); */
+
+  document.getElementById("report").onclick = function() 
+{
+  //console.log('hii')
+  //window.location = 'report.html'
+
+
+        $('#report1').modal({backdrop: 'static', keyboard: false})  
+        $('#report1').modal();
+
+  
+
+
+}
+
+document.getElementById("new_report").onclick = function() {
+
+  
+  var splitted = detail_selected.split(',')
+
+  fetch('https://api.ipify.org?format=json')
+        .then(res => res.json())
+        .then((out) => {
+
+          var data = out.ip; 
+          //console.log(data)
+          reportuser1(splitted[0],splitted[1],data)
+          
+
+            
+    }).catch(err => console.error(err));
+
+  
+
+  $('#report1').modal('hide');
+
+  
+
+}
+
+</script>
+
+
+</html>
